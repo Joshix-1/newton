@@ -6,7 +6,7 @@ import 'package:newton_particles/src/utils/random_extensions.dart';
 ///
 /// The `SmokeEffect` class extends the `Effect` class and provides a particle effect
 /// that simulates rising smoke.
-class SmokeEffect extends Effect<AnimatedParticle> {
+class SmokeEffect extends Effect {
   final double smokeWidth;
 
   SmokeEffect({

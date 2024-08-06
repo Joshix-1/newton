@@ -5,6 +5,44 @@ import 'package:flutter/foundation.dart';
 import 'package:newton_particles/newton_particles.dart';
 import 'package:newton_particles/src/utils/random_extensions.dart';
 
+abstract interface class IEffect {
+  /// Root effect that triggered this effect
+  IEffect get rootEffect;
+
+  /// Should the effect be played in foreground?
+  bool get foreground;
+
+  /// Current state of the effect
+  EffectState get state;
+
+  bool get addedAtRuntime;
+  set addedAtRuntime(bool value);
+
+  /// Immutable List of active particles managed by the effect.
+  Iterable<AnimatedParticle> get activeParticles;
+
+  /// Advances the effect animation based on the elapsed time in milliseconds.
+  /// This method is automatically called to update the particle animation.
+  void forward(int elapsedMillis);
+
+  set postEffectCallback(ValueChanged<IEffect>? effect);
+
+  /// Callback to be notified when state has changed
+  set stateChangeCallback(void Function(IEffect, EffectState)? value);
+
+  /// Size of the animation surface.
+  set surfaceSize(Size value);
+
+  /// Starts the effect emission, allowing particles to be emitted.
+  void start();
+
+  /// Stops the effect emission, optionally cancelling all active particles.
+  void stop({bool cancel = false});
+
+  /// Kills the effect, stopping all particle emission and removing active particles.
+  void kill();
+}
+
 /// An abstract class representing an effect that emits particles for animations in Newton.
 ///
 /// Extend this class to create custom particle effects. Subclasses must implement the
@@ -28,14 +66,14 @@ import 'package:newton_particles/src/utils/random_extensions.dart';
 /// control over particle properties, such as emission frequency, particle appearance, movement,
 /// and animation. This allows you to achieve a wide range of stunning visual effects, such as
 /// rain, smoke, explosions, and more.
-abstract class Effect<T extends AnimatedParticle> {
+abstract class BaseEffect<C extends BaseEffectConfiguration>
+    implements IEffect {
   final List<AnimatedParticle> _activeParticles = List.empty(growable: true);
 
   /// Immutable List of active particles managed by the effect.
-  List<AnimatedParticle> get activeParticles => _activeParticles.toList();
-
-  /// Random number generator for particle properties.
-  final random = Random();
+  @override
+  Iterable<AnimatedParticle> get activeParticles =>
+      _activeParticles.toList(growable: false);
 
   /// Total elapsed time since the effect started.
   double totalElapsed = 0;
@@ -46,8 +84,8 @@ abstract class Effect<T extends AnimatedParticle> {
   /// Size of the animation surface.
   Size _surfaceSize = const Size(0, 0);
 
-  /// Configuration for the effect. See [EffectConfiguration].
-  final EffectConfiguration effectConfiguration;
+  /// Configuration for the effect. See [BaseEffectConfiguration].
+  final C effectConfiguration;
 
   /// Configuration for particle properties. See [ParticleConfiguration].
   final ParticleConfiguration particleConfiguration;
@@ -56,39 +94,41 @@ abstract class Effect<T extends AnimatedParticle> {
   int _totalEmittedCount = 0;
 
   /// Register a callback if you want to be notified that a post effect is occurring
-  ValueChanged<Effect>? postEffectCallback;
+  ValueChanged<BaseEffect>? postEffectCallback;
 
   /// Root effect that triggered this effect
-  Effect get rootEffect => _rootEffect ?? this;
+  @override
+  IEffect get rootEffect => _rootEffect ?? this;
 
-  set rootEffect(Effect rootEffect) {
+  set rootEffect(IEffect rootEffect) {
     _rootEffect = rootEffect;
   }
 
-  Effect? _rootEffect;
+  IEffect? _rootEffect;
 
+  @override
   bool addedAtRuntime = false;
 
   EffectState _state = EffectState.running;
 
   /// Current state of the effect
+  @override
   EffectState get state => _state;
 
-  /// Should the effect be played in foreground?
-  bool get foreground => effectConfiguration.foreground;
-
-  void Function(Effect, EffectState)? _stateChangeCallback;
+  void Function(BaseEffect, EffectState)? _stateChangeCallback;
 
   /// Callback to be notified when state has changed
-  set stateChangeCallback(void Function(Effect, EffectState)? value) {
+  @override
+  set stateChangeCallback(void Function(BaseEffect, EffectState)? value) {
     _stateChangeCallback = value;
     _stateChangeCallback?.call(this, _state);
   }
 
-  Effect({
-    required this.particleConfiguration,
-    required this.effectConfiguration,
-  });
+  @override
+  bool get foreground => effectConfiguration.foreground;
+
+  BaseEffect(
+      {required this.particleConfiguration, required this.effectConfiguration});
 
   /// Abstract method to be implemented by subclasses to define particle emission behavior.
   ///
@@ -108,6 +148,7 @@ abstract class Effect<T extends AnimatedParticle> {
 
   /// Advances the effect animation based on the elapsed time in milliseconds.
   /// This method is automatically called to update the particle animation.
+  @override
   @mustCallSuper
   forward(int elapsedMillis) {
     totalElapsed += elapsedMillis;
@@ -182,6 +223,7 @@ abstract class Effect<T extends AnimatedParticle> {
   }
 
   /// Sets the size of the animation surface.
+  @override
   set surfaceSize(Size value) {
     for (var particle in _activeParticles) {
       particle.onSurfaceSizeChanged(_surfaceSize, value);
@@ -190,7 +232,8 @@ abstract class Effect<T extends AnimatedParticle> {
   }
 
   /// Starts the effect emission, allowing particles to be emitted.
-  start() {
+  @override
+  void start() {
     if (_state == EffectState.killed) {
       throw StateError("Can't start a killed effect");
     }
@@ -198,7 +241,8 @@ abstract class Effect<T extends AnimatedParticle> {
   }
 
   /// Stops the effect emission, optionally cancelling all active particles.
-  stop({bool cancel = false}) {
+  @override
+  void stop({bool cancel = false}) {
     if (_state == EffectState.killed) return;
     _updateState(EffectState.stopped);
     if (cancel) {
@@ -207,11 +251,22 @@ abstract class Effect<T extends AnimatedParticle> {
   }
 
   /// Kills the effect, stopping all particle emission and removing active particles.
-  kill() {
+  @override
+  void kill() {
     stop(cancel: true);
     _updateState(EffectState.killed);
     postEffectCallback = null;
   }
+}
+
+abstract class Effect extends BaseEffect<EffectConfiguration> {
+  Effect({
+    required super.particleConfiguration,
+    required super.effectConfiguration,
+  });
+
+  /// Random number generator for particle properties.
+  final random = Random();
 
   /// Helper method to generate random distance
   /// within the range [EffectConfiguration.minDistance] - [EffectConfiguration.maxDistance].

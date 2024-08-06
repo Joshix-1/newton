@@ -6,7 +6,7 @@ import 'package:newton_particles/newton_particles.dart';
 /// The `PulseEffect` class extends the `Effect` class and provides a particle effect
 /// that creates a pulsating animation. The pulsing effect emits particles from a specific origin
 /// point in a rhythmic manner, resembling a pulsing or beating motion.
-class PulseEffect extends Effect<AnimatedParticle> {
+class PulseEffect extends Effect {
   PulseEffect({
     required super.particleConfiguration,
     required super.effectConfiguration,

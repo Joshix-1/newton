@@ -16,7 +16,7 @@ class ParticleConfiguration {
   final ParticleColor color;
 
   /// Effect to trigger once particle travel is over.
-  final Effect<AnimatedParticle> Function(Particle)? postEffectBuilder;
+  final Effect Function(Particle)? postEffectBuilder;
 
   /// Creates a `ParticleConfiguration` with the specified shape, size, and color.
   ///

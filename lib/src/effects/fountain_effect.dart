@@ -7,7 +7,7 @@ import 'package:newton_particles/src/utils/random_extensions.dart';
 ///
 /// The `FountainEffect` class extends the `Effect` class and provides a particle effect
 /// that creates particles going up and following a Bezier path to imitate a fountain.
-class FountainEffect extends Effect<AnimatedParticle> {
+class FountainEffect extends Effect {
   final double width;
 
   FountainEffect({

@@ -1,12 +1,7 @@
 import 'package:flutter/animation.dart';
 import 'package:newton_particles/src/effects/trail.dart';
 
-/// Configuration class for defining particle emission properties in Newton effects.
-///
-/// The `EffectConfiguration` class provides customizable properties to control particle emission
-/// in Newton effects. It allows you to fine-tune various parameters, such as emission duration,
-/// particle count per emission, emission curve, origin, distance, duration, scale, and fade animation.
-class EffectConfiguration {
+class BaseEffectConfiguration {
   /// Total number of particles to emit. Default: `0` means infinite count.
   final int particleCount;
 
@@ -16,6 +11,23 @@ class EffectConfiguration {
   /// Number of particles emitted per emission. Default: `1`.
   final int particlesPerEmit;
 
+  /// Should the effect be played in foreground
+  final bool foreground;
+
+  const BaseEffectConfiguration({
+    required this.particleCount,
+    required this.emitDuration,
+    required this.particlesPerEmit,
+    required this.foreground,
+  });
+}
+
+/// Configuration class for defining particle emission properties in Newton effects.
+///
+/// The `EffectConfiguration` class provides customizable properties to control particle emission
+/// in Newton effects. It allows you to fine-tune various parameters, such as emission duration,
+/// particle count per emission, emission curve, origin, distance, duration, scale, and fade animation.
+class EffectConfiguration extends BaseEffectConfiguration {
   // TODO Not used for now, will be once we can set a global effect duration
   /// Curve to control the emission timing. Default: [Curves.decelerate].
   final Curve emitCurve;
@@ -79,17 +91,14 @@ class EffectConfiguration {
 
   final Trail trail;
 
-  /// Should the effect be played in foreground
-  final bool foreground;
-
   /// Creates an instance of `EffectConfiguration` with the specified parameters.
   ///
   /// All parameters have default values that can be overridden during object creation.
   const EffectConfiguration({
-    this.particleCount = 0,
-    this.emitDuration = 100,
+    super.particleCount = 0,
+    super.emitDuration = 100,
     this.emitCurve = Curves.decelerate,
-    this.particlesPerEmit = 1,
+    super.particlesPerEmit = 1,
     this.origin = const Offset(0, 0),
     this.minDistance = 100,
     this.maxDistance = 200,
@@ -110,7 +119,7 @@ class EffectConfiguration {
     this.maxFadeInLimit = 0,
     this.fadeInCurve = Curves.linear,
     this.trail = const NoTrail(),
-    this.foreground = false,
+    super.foreground = false,
   })  : assert(minDistance <= maxDistance,
             "Min distance can't be greater than max distance"),
         assert(

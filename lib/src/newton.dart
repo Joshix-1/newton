@@ -3,7 +3,7 @@
 ///
 /// To use the `newton` library, import it in your Dart code and add a `Newton` widget
 /// to your widget tree. The `Newton` widget allows you to add and manage different particle
-/// effects by providing a list of `Effect` instances. It handles the animation and rendering
+/// effects by providing a list of `IEffect` instances. It handles the animation and rendering
 /// of the active particle effects on a custom canvas.
 library newton_particles;
 
@@ -19,16 +19,16 @@ import 'package:newton_particles/src/utils/bundle_extensions.dart';
 /// The `Newton` widget is the entry point for creating captivating particle animations.
 ///
 /// Use the `Newton` widget to add and manage different particle effects like rain, smoke,
-/// or explosions in your Flutter app. Pass a list of `Effect` instances to the `activeEffects`
+/// or explosions in your Flutter app. Pass a list of `IEffect` instances to the `activeEffects`
 /// parameter to create the desired particle animations. The `Newton` widget handles the animation
 /// and rendering of the active particle effects on a custom canvas.
 class Newton extends StatefulWidget {
   /// The list of active particle effects to be rendered.
-  final List<Effect> activeEffects;
+  final List<IEffect> activeEffects;
   final Widget? child;
 
   /// Callback called when effect state has changed. See [EffectState].
-  final void Function(Effect, EffectState)? onEffectStateChanged;
+  final void Function(IEffect, EffectState)? onEffectStateChanged;
 
   const Newton({
     this.activeEffects = const [],
@@ -52,8 +52,8 @@ class NewtonState extends State<Newton> with SingleTickerProviderStateMixin {
       "packages/newton_particles/assets/images/newton.png";
   late Ticker _ticker;
   int _lastElapsedMillis = 0;
-  final List<Effect> _activeEffects = List.empty(growable: true);
-  final List<Effect> _pendingActiveEffects = List.empty(growable: true);
+  final List<IEffect> _activeEffects = List.empty(growable: true);
+  final List<IEffect> _pendingActiveEffects = List.empty(growable: true);
   late Future<ui.Image> _shapeSpriteSheet;
 
   @override
@@ -138,9 +138,9 @@ class NewtonState extends State<Newton> with SingleTickerProviderStateMixin {
   /// Adds a new particle effect to the list of active effects.
   ///
   /// The `addEffect` method allows you to dynamically add a new particle effect to the list
-  /// of active effects. Simply provide an `Effect` instance representing the desired effect,
+  /// of active effects. Simply provide an `IEffect` instance representing the desired effect,
   /// and the `Newton` widget will render it on the canvas.
-  addEffect(Effect effect) {
+  addEffect(IEffect effect) {
     setState(() {
       _activeEffects.add(
         effect
@@ -156,7 +156,7 @@ class NewtonState extends State<Newton> with SingleTickerProviderStateMixin {
   ///
   /// The `removeEffect` method allows you to dynamically remove a particle effect from the list
   /// of active effects.
-  removeEffect(Effect effect) {
+  removeEffect(IEffect effect) {
     setState(() {
       _activeEffects.removeWhere((e) => e.rootEffect == effect);
       _pendingActiveEffects.removeWhere((e) => e.rootEffect == effect);
@@ -189,7 +189,7 @@ class NewtonState extends State<Newton> with SingleTickerProviderStateMixin {
     }
   }
 
-  bool _isEffectRemoved(Effect<AnimatedParticle> effect) {
+  bool _isEffectRemoved(IEffect effect) {
     // Keep only pending effects that are still active even if it's a post effect
     return !widget.activeEffects.contains(effect.rootEffect) &&
         !effect.addedAtRuntime;
@@ -204,13 +204,13 @@ class NewtonState extends State<Newton> with SingleTickerProviderStateMixin {
     }
   }
 
-  _onPostEffect(Effect<AnimatedParticle> effect) {
+  _onPostEffect(IEffect effect) {
     _pendingActiveEffects.add(effect
       ..postEffectCallback = _onPostEffect
       ..stateChangeCallback = _onEffectStateChanged);
   }
 
-  _onEffectStateChanged(Effect effect, EffectState state) {
+  _onEffectStateChanged(IEffect effect, EffectState state) {
     widget.onEffectStateChanged?.call(effect, state);
   }
 }

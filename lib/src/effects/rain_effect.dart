@@ -6,7 +6,7 @@ import 'package:newton_particles/newton_particles.dart';
 /// The `RainEffect` class extends the `Effect` class and provides a particle effect
 /// that simulates falling raindrops. The rain effect emits particles from random x-coordinates
 /// at the top of the animation surface, creating a realistic rain animation.
-class RainEffect extends Effect<AnimatedParticle> {
+class RainEffect extends Effect {
   RainEffect({
     required super.particleConfiguration,
     required super.effectConfiguration,

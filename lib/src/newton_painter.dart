@@ -9,7 +9,7 @@ import 'package:newton_particles/newton_particles.dart';
 /// the active particles of the specified effects onto the provided canvas.
 class NewtonPainter extends CustomPainter {
   /// The list of particle effects to be rendered on the canvas.
-  final List<Effect> effects;
+  final List<IEffect> effects;
 
   /// The sprite sheet that contains default shapes
   final ui.Image shapesSpriteSheet;
