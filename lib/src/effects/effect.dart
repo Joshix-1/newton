@@ -127,8 +127,10 @@ abstract class BaseEffect<C extends BaseEffectConfiguration>
   @override
   bool get foreground => effectConfiguration.foreground;
 
-  BaseEffect(
-      {required this.particleConfiguration, required this.effectConfiguration});
+  BaseEffect({
+    required this.particleConfiguration,
+    required this.effectConfiguration,
+  });
 
   /// Abstract method to be implemented by subclasses to define particle emission behavior.
   ///
@@ -138,13 +140,13 @@ abstract class BaseEffect<C extends BaseEffectConfiguration>
   ///
   /// Example:
   /// ```dart
-  /// AnimatedParticle instantiateParticle(Size surfaceSize) {
+  /// AnimatedParticle instantiateParticleWithIndexInEmit(Size surfaceSize, int index) {
   ///   // Implement the particle emission behavior here.
   ///   // Customize particle properties based on the `surfaceSize`.
   ///   // Create and add particles to the animation.
   /// }
   /// ```
-  AnimatedParticle instantiateParticle(Size surfaceSize);
+  AnimatedParticle instantiateParticleWithIndexInEmit(Size surfaceSize, int index);
 
   /// Advances the effect animation based on the elapsed time in milliseconds.
   /// This method is automatically called to update the particle animation.
@@ -165,7 +167,7 @@ abstract class BaseEffect<C extends BaseEffectConfiguration>
         for (int i = 0; i < effectConfiguration.particlesPerEmit; i++) {
           if (_isEmissionAllowed()) {
             _totalEmittedCount++;
-            _activeParticles.add(instantiateParticle(_surfaceSize));
+            _activeParticles.add(instantiateParticleWithIndexInEmit(_surfaceSize, i));
           } else {
             break;
           }
@@ -267,6 +269,28 @@ abstract class Effect extends BaseEffect<EffectConfiguration> {
 
   /// Random number generator for particle properties.
   final random = Random();
+
+
+  @override
+  AnimatedParticle instantiateParticleWithIndexInEmit(Size surfaceSize, int index) {
+    return instantiateParticle(surfaceSize);
+  }
+
+  /// Abstract method to be implemented by subclasses to define particle emission behavior.
+  ///
+  /// This method is called upon particle emission and is responsible for instantiating particles
+  /// and setting their initial properties, positions, and trajectories. Use the provided `surfaceSize`
+  /// parameter to determine the available animation area and customize particle behavior accordingly.
+  ///
+  /// Example:
+  /// ```dart
+  /// AnimatedParticle instantiateParticle(Size surfaceSize) {
+  ///   // Implement the particle emission behavior here.
+  ///   // Customize particle properties based on the `surfaceSize`.
+  ///   // Create and add particles to the animation.
+  /// }
+  /// ```
+  AnimatedParticle instantiateParticle(Size surfaceSize);
 
   /// Helper method to generate random distance
   /// within the range [EffectConfiguration.minDistance] - [EffectConfiguration.maxDistance].
