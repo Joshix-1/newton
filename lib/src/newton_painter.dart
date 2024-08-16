@@ -80,6 +80,7 @@ class NewtonPainter extends CustomPainter {
     _transformsPerImage.clear();
     _rectsPerImage.clear();
     _colorsPerImage.clear();
+    _allImages.clear();
   }
 
   /// Updates the transformation maps with the given particle's properties.
